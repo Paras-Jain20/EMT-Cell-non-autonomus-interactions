@@ -14,25 +14,21 @@ inverse_r2 =  35;% r_e
 r2 = 1/(inverse_r2*r1); % normalised r_e; is set to 1.5 which is normalised with r1; if r2 is empty set then it is a variable parameter
 
 default_total_itr = 3;
+% pop_model = [20 21 26 27 25 23 33];%
 pop_model = [20 21 26 27 25 23 33];%
 birth_tran_ratio_set = [50 100 150 200 250 300];
 Pop_model_names = ["GC_{s}&T" , "GC_{a}&T", "GC_{s}&T-Er", "GC_{s}&T-Mr" , "GC_{s}&T-EMr",  "GC_{s}&T-Mi-Er", "GC_{s}I&T" ];
-
-
-% pop_model = [3 4.1 11 12 14 10 13]; 
-% Pop_model_names = ["G&T" , "GI&T", "G&T-Mr","G&T-Er", "G&T-EMr", "G&T-Mi", "G&T-Mi-Mr"];
-% birth_tran_ratio_set = [5 10 20 50 100];
-
 
 goodness_matrix = zeros(length(pop_model),length(birth_tran_ratio_set));
 
 i = 1; % to track population model
 % select a population growth model
-for pop_model_indx = 1:max(pop_model)%[20 26 27 25 23];%[11 14]%[3 11 12 14 10 13]%[1 2 3 10 11 12 13]
+for pop_model_indx = 1:max(pop_model)
     j = 1; % to track b t ratio model
     if(~isempty(find(pop_model_indx == pop_model,1)))
 
         for birth_tran_ratio = birth_tran_ratio_set%[5 10 20 100]%[50 100 150 200 250 300] %200 500] %[5 10 20 50 100] % max ratio between birth and transition
+            disp(['Running the analysis for ' num2str(pop_model_indx) ' ' num2str(birth_tran_ratio)])
             close all
 
             % type of optimum parameters search to be performed:
@@ -43,7 +39,7 @@ for pop_model_indx = 1:max(pop_model)%[20 26 27 25 23];%[11 14]%[3 11 12 14 10 1
 
             if(pop_model_indx < 15) % for models capturing dynamics of Bhatia et al. data
 
-                cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Parameters sets from experimental data')
+                cd('C:\Users\user\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Parameters sets from experimental data')
 
                 if(isfile(['para_Bhatia_data_pd_mod_' num2str(pop_model_indx) '_s_m_' num2str(search_method) '_b_t_ratio_' num2str(birth_tran_ratio) '_inverse_r1_' num2str(1/r1) '.csv']))
 
@@ -69,7 +65,7 @@ for pop_model_indx = 1:max(pop_model)%[20 26 27 25 23];%[11 14]%[3 11 12 14 10 1
 
                 data = [];
 
-                cd('C:\Users\Asus\OneDrive - Indian Institute of Science\Projects\State transition\Experimental data');
+                cd('C:\Users\user\OneDrive - Indian Institute of Science\Projects\State transition\Experimental data');
 
                 % importing Bhatia et al data
                 for ini_dist_indx = 1:2
@@ -88,7 +84,7 @@ for pop_model_indx = 1:max(pop_model)%[20 26 27 25 23];%[11 14]%[3 11 12 14 10 1
                 interpolated_timept = r1:r1:1000; % interpolating time to get more data points to plot ODE solution trajectories
 
             else
-                cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Parameters sets from experimental data')
+                cd('C:\Users\user\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Parameters sets from experimental data')
                 if(isfile(['para_Yamamoto_data_pd_mod_' num2str(pop_model_indx) '_s_m_' num2str(search_method) '_b_t_ratio_' num2str(birth_tran_ratio) '_inverse_r1_' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.csv']))
 
                     para_data = table2array(readtable(['para_Yamamoto_data_pd_mod_' num2str(pop_model_indx) '_s_m_' num2str(search_method) '_b_t_ratio_' num2str(birth_tran_ratio) '_inverse_r1_' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.csv']));
@@ -112,7 +108,7 @@ for pop_model_indx = 1:max(pop_model)%[20 26 27 25 23];%[11 14]%[3 11 12 14 10 1
 
                 %                 Importing Yamamoto et al. 2017 data; models having
                 %                 pop_model_indx >= 15
-                cd('C:\Users\Asus\OneDrive - Indian Institute of Science\Projects\State transition\Experimental data\Yamamoto et al. 2017')
+                cd('C:\Users\user\OneDrive - Indian Institute of Science\Projects\State transition\Experimental data\Yamamoto et al. 2017')
                 data = (readmatrix('Yamamoto et al 2017 Data 1 cell fraction.xlsx'));
                 num_rep = 3;
                 num_init_cond = 5; % number of different initial condition in the data
@@ -124,7 +120,7 @@ for pop_model_indx = 1:max(pop_model)%[20 26 27 25 23];%[11 14]%[3 11 12 14 10 1
 
             num_time_pts = length(timept);
 
-            cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Code files')
+            cd('C:\Users\user\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Code files')
 
             if(para_opt)
                 interpolation = 0; % to add more time points for the ODE simulated data; must be zero if we using objective function to minimize error with the data
@@ -133,12 +129,12 @@ for pop_model_indx = 1:max(pop_model)%[20 26 27 25 23];%[11 14]%[3 11 12 14 10 1
                 [select_para,goodness] = para_search(search_method,pop_model_indx,total_itr, data_type, data, num_rep, init_cond, timept, interpolated_timept, interpolation, num_time_pts,birth_tran_ratio,r2); % select_para are filtered for re > rm
                 goodness_matrix(i,j) = min(goodness);
 
-                cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Parameters sets from experimental data')
+                cd('C:\Users\user\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Parameters sets from experimental data')
 
                 if(pop_model_indx <15 )
                     writematrix(['para_mod_' num2str(pop_model_indx) '_s_m_' num2str(search_method) '_b_t_ratio_' num2str(birth_tran_ratio) '_inverse_r1_' num2str(1/r1) '.csv'],[select_para,goodness],'-append');
                 else
-                    writematrix([select_para,goodness],['para_pd_mod_' num2str(pop_model_indx) '_s_m_' num2str(search_method) '_b_t_ratio_' num2str(birth_tran_ratio) '_inverse_r1_' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.csv']);
+                    writematrix([select_para,goodness],['para_pd_mod_' num2str(pop_model_indx) '_s_m_' num2str(search_method) '_b_t_ratio_' num2str(birth_tran_ratio) '_inverse_r1_' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.csv'],'WriteMode','append');
                 end
 
             end
@@ -163,15 +159,11 @@ ax = gca;
 grid on
 xlabel('Population model')
 ylabel('g t ratio')
-% ylabel('Minimum Chi-sqr')
-% lg = legend(string(b_t_ratio_set),'Location','northeastoutside');
-% title(lg,'g t ratio')
-% axis square
 ax.FontSize = 15;
 colormap parula
 colorbar off
-% saveas(gcf,['Yamamoto_data_Normalised_Min_chi_sqr_vs_pop_model_various_b_t_ratio_s_m_' num2str(search_method)  '_inverse_r1_' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.png'])
-saveas(gcf,['Bhatia_data_Normalised_Min_chi_sqr_vs_pop_model_various_b_t_ratio_s_m_' num2str(search_method)  '_inverse_r1_' num2str(1/r1) '.png'])
+saveas(gcf,['Yamamoto_data_Normalised_Min_chi_sqr_vs_pop_model_various_b_t_ratio_s_m_' num2str(search_method)  '_inverse_r1_' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.png'])
+% saveas(gcf,['Bhatia_data_Normalised_Min_chi_sqr_vs_pop_model_various_b_t_ratio_s_m_' num2str(search_method)  '_inverse_r1_' num2str(1/r1) '.png'])
 
 
 % determination of number of parameter for different models
@@ -192,7 +184,7 @@ for pop_model_indx = pop_model
             case {4,5,7,13,14,15,16,17,19, 26,27,4.1} % i.e. population model with 5 parameters
                 delta_chi_sq_all = 11.3;
                 num_para = 5;
-            case {8,9,22,23,24,25} % i.e. population model with 6 parameters
+            case {8,9,22,23,24,25,33} % i.e. population model with 6 parameters
                 delta_chi_sq_all = 12.8;
                 num_para = 6;
             case {21} % i.e. population model with 7 parameters
@@ -206,18 +198,19 @@ for pop_model_indx = pop_model
                 delta_chi_sq_all = 4;
             case{3} % i.e. population model with 2 parameter
                 delta_chi_sq_all = 6.17;
+                num_para = 2;
             case {4,5,13,14,15,16,17,19,29,26,27} % i.e. population model with 4 parameters
                 delta_chi_sq_all = 9.70;
-                num_para = 5;
+                num_para = 4;
             case {1,2,10,11,12,20} % i.e. population model with 3 parameters
                 delta_chi_sq_all = 8.02;
-                num_para = 4;
-            case {8,9,22,23,24,25} % i.e. population model with 5 parameters
+                num_para = 3;
+            case {8,9,22,23,24,25,33} % i.e. population model with 5 parameters
                 delta_chi_sq_all = 11.3;
-                num_para = 6;
+                num_para = 5;
             case {21} % i.e. population model with 6 parameters
                 delta_chi_sq_all = 12.8;
-                num_para = 7;
+                num_para = 6;
         end
 
     end
@@ -233,19 +226,13 @@ figure('Units','normalized','Position',figure_position)
 X = categorical(Pop_model_names);
 X = reordercats(X,Pop_model_names);
 heatmap(X,birth_tran_ratio_set,log10(p_value'),"ColorScaling","log",Title="log_{10}(p-value chi-sqr statistic)");
-% bar(X,log10(goodness_matrix))
-% bar(X,(goodness_matrix))
 ax = gca;
 grid on
 xlabel('Population model')
 ylabel('g t ratio')
-% ylabel('p-value Chi-sqr statistic')
-% lg = legend(string(b_t_ratio_set),'Location','northeastoutside');
-% title(lg,'g t ratio')
-% axis square
 ax.FontSize = 15;
 colormap parula
 colorbar off
-% saveas(gcf,['Yamamoto_data_p_statistic_vs_pop_model_various_b_t_ratio_s_m_' num2str(search_method)  '_inverse_r1_' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.png'])
-saveas(gcf,['Bhatia_data_p_statistic_vs_pop_model_various_b_t_ratio_s_m_' num2str(search_method)  '_inverse_r1_' num2str(1/r1) '.png'])
+saveas(gcf,['Yamamoto_data_p_statistic_vs_pop_model_various_b_t_ratio_s_m_' num2str(search_method)  '_inverse_r1_' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.png'])
+% saveas(gcf,['Bhatia_data_p_statistic_vs_pop_model_various_b_t_ratio_s_m_' num2str(search_method)  '_inverse_r1_' num2str(1/r1) '.png'])
 

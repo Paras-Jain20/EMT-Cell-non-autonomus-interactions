@@ -1,20 +1,24 @@
 % cross validation data analysis %
 close all
 search_method = 1;
+
+total_itr= 10;
+pop_model = [20 21 26 27 25 23 33];
+% pop_model_names = ["G&T" , "GC&T", "G&T-Er" , "G&T-Mr", "G&T-EMr", "G&T-Mi-Er"];
+pop_model_names = ["GC_{s}&T" , "GC_{a}&T", "GC_{s}&T-Mr", "GC_{s}&T-Er" , "GC_{s}&T-EMr", "GC_{s}&T-Mi-Er","GC_{s}I&T" ];
+birth_tran_ratio = 250;
+init_cond = [1 2 3 4 5];
 r1 = 1/54;
 inverse_r2 = 35;
 r2 = 1/(r1*inverse_r2);
-total_itr= 10;
-pop_model = [20 21 26 27 25 23 32 33];
-% pop_model_names = ["G&T" , "GC&T", "G&T-Er" , "G&T-Mr", "G&T-EMr", "G&T-Mi-Er"];
-pop_model_names = ["GC_{s}&T" , "GC_{a}&T", "GC_{s}&T-Mr", "GC_{s}&T-Er" , "GC_{s}&T-EMr", "GC_{s}&T-Mi", "GC_{s}&T-Mi-Er", "GC_{s}I", "GC_{s}I&T" ];
-birth_tran_ratio = 250;
-init_cond = [1 2 3 4 5];
+
+
 % pop_model= [3 4 11 12 14 10 13];
-% pop_model_names = ["G&T" , "GC&T", "G&T-Mr", "G&T-Er" , "G&T-EMr", "G&T-Mi", "G&T-Mi-Er"];
+% pop_model_names = ["G&T" , "GI&T", "G&T-Mr", "G&T-Er" , "G&T-EMr", "G&T-Mi", "G&T-Mi-Mr"];
 % birth_tran_ratio = 50;
 % init_cond = [1 2];
-
+% r1 = 1/50;
+% r2 = [];
 
 
 %%%% control cross 1 validation analysis %%%%%%
@@ -59,8 +63,32 @@ end
 
 min_cost = min(cost,[],3);
 norm_min_cost = min_cost./min_control_cost;
+% norm_min_cost = min_cost;
 
-figure('units','normalized','Position', [0 0 1 1]);
+figure
+h = heatmap(init_cond, categorical(pop_model_names),norm_min_cost,'CellLabelColor','none');
+colormap parula
+xlabel('Held out initial conditions');
+ylabel('Population model');
+ax = gca;
+ax.FontSize = 14;
+c = colorbar;
+c.Label.String = 'log_{10}(chi-square)';
+
+min_cost = min(cost,[],3);
+% norm_min_cost = min_cost./min_control_cost;
+norm_min_cost = min_control_cost;
+
+figure
+h = heatmap(init_cond, categorical(pop_model_names),(min_control_cost));
+colormap white
+xlabel('Held out initial conditions');
+ylabel('Population model');
+ax = gca;
+ax.FontSize = 14;
+c = colorbar;
+c.Label.String = 'log_{10}(chi-square)';
+
 for itr_indx = 1:length(pop_model)
     subplot(2,5,itr_indx)
     ax = gca;
@@ -69,15 +97,17 @@ for itr_indx = 1:length(pop_model)
     xlim([0 length(init_cond)+1]);
     ylim([min(log10(norm_min_cost),[],'all')-0.5 max(log10(norm_min_cost),[],'all')+0.5])
     ax.XTickLabels = (init_cond);
-    xlabel('test initial conditions');
-    ylabel('log_{10}(fractional change in chi-square)');
+    xlabel('Held out initial conditions');
+%     ylabel('log_{10}(fractional change in chi-square)');
+    ylabel('log_{10}(chi-square)');
+
     title(['pop model ' pop_model_names(itr_indx)])
     axis square
     grid on
     ax.FontSize = 12;
 end
 
-cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Manuscript figures\Figure 2 and related SI')
+% cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Manuscript figures\Figure 2 and related SI')
 if(~isempty(find(pop_model > 16,1)))
     print(gcf, ['Cross 1 model validation Yamamoto data b_t_ratio ' num2str(birth_tran_ratio) ' inverse r1 ' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.png'],'-dpng','-r300');
 elseif (~isempty(find(pop_model < 16,1)))
@@ -93,12 +123,13 @@ b.BarWidth = 0.25;
 ylim([min(log10(sum(norm_min_cost,2)),[],'all')-0.5 max(log10(sum(norm_min_cost,2)),[],'all')+0.5])
 % ax.XTickLabels = (pop_model);
 xlabel('Pop model');
-ylabel('log_{10}(fractional change in chi-square sum)');
+% ylabel('log_{10}(fractional change in chi-square sum)');
+ylabel('log_{10}(chi-square sum)');
 axis square
 grid on
 ax.FontSize = 12;
 
-cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Manuscript figures\Figure 2 and related SI')
+% cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Manuscript figures\Figure 2 and related SI')
 if(~isempty(find(pop_model > 16,1)))
     print(gcf, ['Cross 1 model validation summed Chi square Yamamoto data b_t_ratio ' num2str(birth_tran_ratio) ' inverse r1 ' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.png'],'-dpng','-r300');
 elseif (~isempty(find(pop_model < 16,1)))

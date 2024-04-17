@@ -3,21 +3,27 @@ close all
 search_method = 1;
 % for Bhatia et al Data
 % pop_model_indx_set = [3 11 12 14 10 13 4 4.1];
-pop_model_indx_set = [3 4.1 11 12 14 10 13];
+profile_sample_size = 1000;  % number of parameter sets present in each data file
+r1 = 1/50;
+% inverse_r2 = 35;
+r2= []; %1/(r1*inverse_r2);
+pop_model_indx_set = [3 4 11 12 14 10 13];
 % Pop_model_names = ["G&T" , "GC&T"];
 % 
-% Pop_model_names = ["G&T" , "GC&T", "G&T-Mr","G&T-Er", "G&T-EMr", "G&T-Mi", "G&T-Mi-Er"];
-% b_t_ratio_set = [5 10 20 50 100];
+Pop_model_names = ["G&T" , "GI&T", "G&T-Mr","G&T-Er", "G&T-EMr", "G&T-Mi", "G&T-Mi-Mr"];
+b_t_ratio_set = [5 10 20 50 100];
 % for Yamamoto et al. data
-pop_model_indx_set = [20 21 26 27 25 23]; %[20 22 23 24 25 19 21];
-Pop_model_names = ["G&T" , "GC&T", "G&T-Er" , "G&T-Mr", "G&T-EMr", "G&T-Mi-Er"];
+% pop_model_indx_set = [20 21 26 27 25 23 33]; %[20 22 23 24 25 19 21];
+% pop_model_indx_set = 27%[20 21 26 27 25 23]; %[20 22 23 24 25 19 21];
+% Pop_model_names = ["GC_{s}&T" , "GC_{a}&T", "GC_{s}&T-Er", "GC_{s}&T-Mr" , "GC_{s}&T-EMr",  "GC_{s}&T-Mi-Er", "GC_{s}I&T" ];
+
 % pop_model_indx_set = [21]; %[20 22 23 24 25 19 21];
 % Pop_model_names = ["GC&T"];
-b_t_ratio_set = [50 100 150 200 250 300];
-profile_sample_size = 2000;  % number of parameter sets present in each data file
-r1 = 1/54;
-inverse_r2 = 35;
-r2= 1/(r1*inverse_r2);
+% b_t_ratio_set = [50 100 150 200 250 300];
+% profile_sample_size = 2000;  % number of parameter sets present in each data file
+% r1 = 1/54;
+% inverse_r2 = 35;
+% r2= 1/(r1*inverse_r2);
 max_para =3; % compare Epi growth and transition rates which are common to all models; influence parameters have different roles depending on the model
 cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Parameters sets from experimental data')
 
@@ -96,7 +102,7 @@ if(isempty(r2))
             %             parameters = table2array(readtable(['para_Bhatia_data_pd_mod_' num2str(pop_model_indx) '_s_m_' num2str(search_method) '_b_t_ratio_' num2str(b_t_ratio) '_inverse_r1_' num2str(1/r1) '.csv']));
             profile_para = table2array(readtable(['profile_lik_para_Yamamoto_Exp_data_pd_mod_' num2str(pop_model_indx) '_b_t_ratio_' num2str(b_t_ratio) '_inverse_r1_' num2str(1/r1)  '_para_steps_' num2str(profile_sample_size) '.csv']));
             num_rep = 3;
-            num_init_cond = 2;
+            num_init_cond = 5;
             num_time_pts = 5;
         end
 else
@@ -114,7 +120,7 @@ else
             %             parameters = table2array(readtable(['para_Bhatia_data_pd_mod_' num2str(pop_model_indx) '_s_m_' num2str(search_method) '_b_t_ratio_' num2str(b_t_ratio) '_inverse_r1_' num2str(1/r1) '.csv']));
             profile_para = table2array(readtable(['profile_lik_para_Yamamoto_Exp_data_pd_mod_' num2str(pop_model_indx) '_b_t_ratio_' num2str(b_t_ratio) '_inverse_r1_' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2)  '_para_steps_' num2str(profile_sample_size) '.csv']));
             num_rep = 3;
-            num_init_cond = 2;
+            num_init_cond = 5;
             num_time_pts = 5;
         end
 end
@@ -130,6 +136,7 @@ end
         aicc( i, j) = aic(i,j) + (2*num_para*(num_para + 1))/((num_time_pts*num_rep*num_init_cond) - num_para - 1);
 
         %         goodness_matrix(i,j) = parameters(min_error_indx,end);
+        if(pop_model_indx~= 33)
         for para_indx = 2:size(profile_para,2)-2 % for parameters 2 (t1) and 3(t3) in the nondimensionalised models
                         
             combined_data((i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + 1 : (i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + profile_sample_size,1) = (pop_model_indx)*ones(profile_sample_size,1);
@@ -139,9 +146,18 @@ end
             combined_data((i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + 1 : (i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + profile_sample_size,4) = profile_para(profile_para(:,end) == para_indx,para_indx);
 
             combined_data((i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + 1 : (i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + profile_sample_size,5) = (delta_chi_sq_all*ones(profile_sample_size,1)+min(profile_para(profile_para(:,end) == para_indx,end-1))) - profile_para(profile_para(:,end) == para_indx,end-1);
+        end
+        else
+        for para_indx = 5:size(profile_para,2)-2 % for parameters 2 (t1) and 3(t2) in the nondimensionalised models
+                        
+            combined_data((i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + 1 : (i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + profile_sample_size,1) = (pop_model_indx)*ones(profile_sample_size,1);
+            combined_data((i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + 1 : (i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + profile_sample_size,2) = b_t_ratio*ones(profile_sample_size,1);
+            combined_data((i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + 1 : (i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + profile_sample_size,3) = (para_indx-3)*ones(profile_sample_size,1);
+%             combined_data((i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + 1 : (i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + profile_sample_size,4) = profile_para((para_indx-1)*profile_sample_size+1:para_indx*profile_sample_size,para_indx);
+            combined_data((i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + 1 : (i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + profile_sample_size,4) = profile_para(profile_para(:,end) == para_indx,para_indx);
 
-
-
+            combined_data((i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + 1 : (i-1)*profile_sample_size*length(b_t_ratio_set)*max_para + (j-1)*max_para*profile_sample_size + (para_indx-1)*profile_sample_size + profile_sample_size,5) = (delta_chi_sq_all*ones(profile_sample_size,1)+min(profile_para(profile_para(:,end) == para_indx,end-1))) - profile_para(profile_para(:,end) == para_indx,end-1);
+        end
         end
         if(false)
 %         if(pop_model_indx == 4.1 || pop_model_indx == 21)
@@ -199,9 +215,9 @@ combined_data_table.Properties.VariableNames = {'Pop_model' 'b_t_ratio' 'para_in
 figure_position = [0.6036 0.4028 0.3385 0.3259];
 close all
 % 
-cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Manuscript figures\Figure 2 and related SI')
+% cd('C:\Users\Asus\OneDrive - Indian Institute of Science\GitHub\EMT-State-Transition-2.0\Manuscript figures\Figure 2 and related SI')
 
-pop_model_names_seq = linspace(1.5,1.5*length(pop_model_indx_set),length(pop_model_indx_set));
+% pop_model_names_seq = linspace(1.5,1.5*length(pop_model_indx_set),length(pop_model_indx_set));
 
 % % to plot M grow vs M E transition rates box plots
 % figure('Units','normalized','Position',figure_position)
@@ -228,6 +244,34 @@ pop_model_names_seq = linspace(1.5,1.5*length(pop_model_indx_set),length(pop_mod
 % 
 % ax.FontSize = 14;
 % saveas(gcf,['Bhatia_data_E_grow_rate_norm_vs_pop_model_various_b_t_ratio_s_m_' num2str(search_method)  '_inverse_r1_' num2str(1/r1) '.png'])
+
+
+% to plot M grow vs M E transition rates box plots
+figure('Units','normalized','Position',figure_position)
+ax =gca;
+filter_table = combined_data_table(combined_data_table.b_t_ratio == 250,:);
+filter_table = filter_table(filter_table.confidence_sign>=0,:);
+filter_table = filter_table(logical((filter_table.para_indx == 2) + (filter_table.para_indx == 3) ),:);
+
+% pop_model = zeros(height(filter_table),1);
+% for j = 1:length(pop_model_indx_set)
+%     pop_model(filter_table.Pop_model == pop_model_indx_set(j)) = pop_model_names_seq(j);
+% end
+boxchart(categorical(filter_table.para_indx),(filter_table.para_value),'GroupByColor',filter_table.Pop_model);
+% xlim([-1+min(pop_model_names_seq) 1+max(pop_model_names_seq)])
+% ax.XTick = pop_model_names_seq;
+ax.XTickLabels = ["t_{me}" , "t_{em}"];
+lg = legend(Pop_model_names,'Location','northeastoutside');
+title(lg,'Pop model')
+grid on
+ylabel('Values')
+xlabel('Transition rates')
+grid on
+% axis square
+ax.FontSize = 14;
+saveas(gcf,['Yamamoto_data_M_E_trans_rate_norm_vs_pop_model_various_b_t_ratio_s_m_' num2str(search_method)  '_inverse_r1_' num2str(1/r1) '_inverse_r2_' num2str(inverse_r2) '.png'])
+
+
 
 
 % to plot M grow vs M E transition rates box plots

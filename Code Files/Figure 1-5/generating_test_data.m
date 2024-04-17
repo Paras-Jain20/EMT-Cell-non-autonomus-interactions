@@ -58,13 +58,12 @@ parfor pop_model_indx = 1:length(pop_model)%[3 11 12 14 10 13]% % population gro
             num_init_cond = 5; % number of different initial condition in the data
             timept = (0:3:12); % time is unitless as it is scaled by m cells division rate (r1)
             interpolated_timept = 1;  % interpolating time to get more data points to plot ODE solution trajectories
-            num_readout = 2; % number of states captured in the experimental dat
+            num_readout = 2; % number of states captured in the experimental data
 
         end
 
         num_time_pts = length(timept); % number of time pts per replicate
         
-%         combined_test_data = zeros(total_test_data*num_time_pts*num_init_cond*num_rep,num_readout+2+1)
 
         for noise_factor = [5 25 50]
             total_itr = 1; % total number of parameters set to be checked/sampled
@@ -92,10 +91,11 @@ parfor pop_model_indx = 1:length(pop_model)%[3 11 12 14 10 13]% % population gro
                     if(pop_model(pop_model_indx) == 1)
                         std_level = (sqrt(ode_sim_data))/noise_factor; % for models with cell numbers as output
                     else
+                        % the standard deviation of noise below is zero at cell fraction 0 and 1 and maximizes at cell fraction of 0.5; it follows a inverted and shifted quadratic equation  
                         std_level = (-(ode_sim_data - 1/2).^2 +1/4)/noise_factor; % for models with cell fraction as output or models which have 4 distinct subpopulations
                     end
 
-                    % adding noise to the data to get multiple replicates for a para set
+                    % adding noise to the data to get multiple replicates for a parameter set
                     while(true)
                         test_data(:,1:num_readout+1) = [repmat(timept',num_rep*num_init_cond ,1) ode_sim_data + std_level.*randn(size(ode_sim_data))];
                         if(pop_model(pop_model_indx) == 1)
@@ -120,8 +120,6 @@ parfor pop_model_indx = 1:length(pop_model)%[3 11 12 14 10 13]% % population gro
 
                     test_data_matrix(1+(test_data_indx-1)*size(test_data,1):test_data_indx*size(test_data,1),:) = [test_data ones(size(test_data,1),1)*test_data_indx];
 
-%                     test_data = splitvars(table(test_data));
-%                     parameters = splitvars(table(select_para));
 
                 end
             end
@@ -135,7 +133,5 @@ parfor pop_model_indx = 1:length(pop_model)%[3 11 12 14 10 13]% % population gro
             cd(directory)
 
         end
-    % else
-    %     continue;
-    % end
+
 end

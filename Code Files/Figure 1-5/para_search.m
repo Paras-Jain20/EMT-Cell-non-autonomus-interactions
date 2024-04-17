@@ -1,8 +1,10 @@
-function [select_para,goodness] = para_search(search_method,pop_model_indx,total_itr, data_type, data, num_rep,init_cond,timept,interpolated_timept,interpolation, num_time_pts, birth_tran_ratio, r2)
+function [select_para,goodness,num_model_para] = para_search(search_method,pop_model_indx,total_itr, data_type, data, num_rep,init_cond,timept,interpolated_timept,interpolation, num_time_pts, birth_tran_ratio, r2)
 
 rng('shuffle')
 goodness = zeros(total_itr,1);
 
+% below number of model parameter includes r_e irrespective whether it is
+% constant or variable
 switch pop_model_indx
     case{6} % i.e. population model with 1 parameter
         num_model_para = 1;
@@ -10,18 +12,20 @@ switch pop_model_indx
         num_model_para = 2;
     case {1,2,10,11,12,20,32} % i.e. population model with 4 parameters
         num_model_para = 4;
-    case {3,7,18} % i.e. population model with 3 parameters
+    case {3,7,18,41} % i.e. population model with 3 parameters
         num_model_para = 3;
-    case {4,5,13,14,15,16,17,29, 26,27} % i.e. population model with 5 parameters
+    case {4,5,13,14,15,16,17,29, 26,27,34,43} % i.e. population model with 5 parameters
         num_model_para = 5;
-    case {8,9,22,23,24,25,33} % i.e. population model with 6 parameters
+    case {8,9,22,23,24,25,33,38,39,42,52,53} % i.e. population model with 6 parameters
         num_model_para = 6;
-    case {21} % i.e. population model with 7 parameters
+    case {21,36,37,40,44,48,49,50,54,55} % i.e. population model with 7 parameters
         num_model_para = 7;
     case {30} % i.e. population model with 15 parameters
         num_model_para = 15;
-    case {31} % i.e. population model with 15 parameters
+    case {31,56,57} % i.e. population model with 15 parameters
         num_model_para = 9;
+    case {35,45,46,47,28,51} % i.e. population model with 15 parameters
+        num_model_para = 8;
 end
 
 select_para = zeros(total_itr,num_model_para);
@@ -177,7 +181,7 @@ for itr_num = 1:total_itr
                 parameters(2,1) = rand*20000000; % carrying capacity of M cells
 
                 lower_bound = [1 1000000];
-                upper_bound = [5 20000000];
+                upper_bound = [3 20000000];
 
             case {20}
                 parameters = zeros(4,1);
@@ -187,20 +191,20 @@ for itr_num = 1:total_itr
                 parameters(4,1) = rand*20000000; % carrying capacity of M cells
 
                 lower_bound = [1 1/birth_tran_ratio 1/birth_tran_ratio 1000000];
-                upper_bound = [5 1 1 20000000];
+                upper_bound = [3 1 1 20000000];
 
             case {21}
                 parameters = zeros(7,1);
                 parameters(1,1) = (1 + 2*rand); % growth rate of e cells
                 parameters(2,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
                 parameters(3,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
-                parameters(4,1) = rand; % E competition to M cells
-                parameters(5,1) = rand; % M competition to E cells
+                parameters(4,1) = 10*rand; % E competition to M cells
+                parameters(5,1) = 10*rand; % M competition to E cells
                 parameters(6,1) = 20000000*rand; % carrying capacity of M cells
                 parameters(7,1) = 20000000*rand; % carrying capacity of E cells
 
-                lower_bound = [1 1/birth_tran_ratio 1/birth_tran_ratio -10 -10  1000000 1000000 ];
-                upper_bound = [5 1 1 10 10 20000000 20000000];
+                lower_bound = [1 1/birth_tran_ratio 1/birth_tran_ratio 0 0  1000000 1000000 ];
+                upper_bound = [3 1 1 10 10 20000000 20000000];
 
             case {22}
                 parameters = zeros(6,1);
@@ -212,7 +216,7 @@ for itr_num = 1:total_itr
                 parameters(6,1) = 4 * rand; % Influence constant of M population
 
                 lower_bound = [1 1/birth_tran_ratio 1/birth_tran_ratio 1000000 0 0];
-                upper_bound = [5 1 1 20000000 10 10];
+                upper_bound = [3 1 1 20000000 10 10];
 
             case {23}
                 parameters = zeros(6,1);
@@ -224,7 +228,7 @@ for itr_num = 1:total_itr
                 parameters(6,1) = 4 * rand; % Influence constant of M population
 
                 lower_bound = [1 1/birth_tran_ratio 1/birth_tran_ratio 1000000 0 0];
-                upper_bound = [5 1 1 20000000 1 10];
+                upper_bound = [3 1 1 20000000 1 10];
 
             case {24}
                 parameters = zeros(6,1);
@@ -237,7 +241,7 @@ for itr_num = 1:total_itr
                 parameters(6,1) = 4 * rand; % Influence constant of M population
 
                 lower_bound = [1  1/birth_tran_ratio 1/birth_tran_ratio 1000000 0 0];
-                upper_bound = [5 1 1 20000000 1 10];
+                upper_bound = [3 1 1 20000000 1 10];
 
             case {25}
                 parameters = zeros(6,1);
@@ -250,7 +254,7 @@ for itr_num = 1:total_itr
                 parameters(6,1) = 1 * rand; % Influence constant of M population
 
                 lower_bound = [1  1/birth_tran_ratio 1/birth_tran_ratio 1000000 0 0];
-                upper_bound = [5 1 1 20000000 1 1];
+                upper_bound = [3 1 1 20000000 1 1];
 
             case {26,27}
                 parameters = zeros(5,1);
@@ -262,26 +266,21 @@ for itr_num = 1:total_itr
                 parameters(5,1) = 1 * rand; % retention constant of M population
 
                 lower_bound = [1  1/birth_tran_ratio 1/birth_tran_ratio 1000000 0];
-                upper_bound = [5 1 1 20000000 1];
+                upper_bound = [3 1 1 20000000 1];
 
-            case {28}
-                parameters = zeros(13,1);
-                parameters(1,1) = rand; % growth rate of e cells
-                parameters(2,1) = rand; % non-dimensional rescaled M to E transiton rates
-                parameters(3,1) = rand; % non-dimensional rescaled E to M transiton rates
-                parameters(4,1) = rand; % carrying capacity of M cells
-                parameters(5,1) = rand; % retention constant of M population
-                parameters(6,1) = rand; % retention constant of M population
-                parameters(7,1) = rand; % growth rate of e cells
-                parameters(8,1) = rand; % non-dimensional rescaled M to E transiton rates
-                parameters(9,1) = rand; % non-dimensional rescaled E to M transiton rates
-                parameters(10,1) = rand; % carrying capacity of M cells
-                parameters(11,1) = rand; % retention constant of M population
-                parameters(12,1) = rand; % retention constant of M population
-                parameters(13,1) = rand; % retention constant of M population
+            case {28,51}
+               parameters = zeros(8,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells wrt growth rate of m cells
+                parameters(2,1) = 1/(1+birth_tran_ratio*rand); % M E transition rate wrt growth rate of m cells
+                parameters(3,1) = 1/(1+birth_tran_ratio*rand); % E M transition rate wrt growth rate of m cells
+                parameters(4,1) = 1/(1+birth_tran_ratio*rand); % M E transition rate wrt growth rate of m cells
+                parameters(5,1) = 1/(1+birth_tran_ratio*rand); % E M transition rate wrt growth rate of m cells
+                parameters(6,1) = 1/(1+birth_tran_ratio*rand); % M E transition rate wrt growth rate of m cells
+                parameters(7,1) = 1/(1+birth_tran_ratio*rand); % E M transition rate wrt growth rate of m cells
+                parameters(8,1) = rand; % initial fraction of hybrid cells in the E/M subpopulation
 
-                lower_bound = [0 0 0 0 0 0 0 0 0 0 0 0 0];
-                upper_bound = [1 1 1 1 1 1 1 1 1 1 1 1 1];
+                lower_bound = [1 1/(birth_tran_ratio) 1/(birth_tran_ratio) 1/(birth_tran_ratio) 1/(birth_tran_ratio) 1/(birth_tran_ratio) 1/(birth_tran_ratio) 0];
+                upper_bound = [3 1 1 1 1 1 1 1];
 
             case {29}
                 parameters = zeros(5,1);
@@ -292,8 +291,8 @@ for itr_num = 1:total_itr
                 parameters(5,1) = rand* 20000000; % carrying capacity of E cells
 
 
-                lower_bound = [1 -10 -10  1000000 1000000 ];
-                upper_bound = [5 10 10 20000000 20000000];
+                lower_bound = [1 0 0  1000000 1000000 ];
+                upper_bound = [3 10 10 20000000 20000000];
 
             case {32}
                 parameters = zeros(4,1);
@@ -302,7 +301,7 @@ for itr_num = 1:total_itr
                 parameters(3,1) = rand; % E competition to M cells
                 parameters(4,1) = rand; % M competition to E cells
 
-                lower_bound = [1 1000000 1 1];
+                lower_bound = [1 1000000 -1 -1];
                 upper_bound = [3 20000000 1 1];
 
             case {33}
@@ -315,7 +314,169 @@ for itr_num = 1:total_itr
                 parameters(6,1) = 1/(1+birth_tran_ratio*rand); % M competition to E cells
 
                 lower_bound = [1 1000000 -1 -1 1/(1+birth_tran_ratio) 1/(1+birth_tran_ratio)];
-                upper_bound = [5 20000000 1 1 1 1];    
+                upper_bound = [5 20000000 1 1 1 1];
+
+            case {34}
+                parameters = zeros(5,1);
+                parameters(1,1) = 1/((60-20)*rand + 20);
+                parameters(2,1) = 1/((60-20)*rand + 20); % growth rate of e cells
+                parameters(3,1) = parameters(1,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(4,1) = parameters(2,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(5,1) = rand*20000000; % carrying capacity of M cells
+
+                lower_bound = [1/60 1/60 1/(60*birth_tran_ratio) 1/(60*birth_tran_ratio)  1000000];
+                upper_bound = [1/20 1/20 1/(20*birth_tran_ratio) 1/(20*birth_tran_ratio) 20000000];
+
+            case {35}
+                parameters = zeros(8,1);
+                parameters(1,1) = 1/((60-20)*rand + 20);
+                parameters(2,1) = 1/((60-20)*rand + 20); % growth rate of e cells
+                parameters(3,1) = parameters(1,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(4,1) = parameters(2,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(5,1) = 10*rand; % E competition to M cells
+                parameters(5,1) = 10*rand; % M competition to E cells
+                parameters(7,1) = 20000000*rand; % carrying capacity of M cells
+                parameters(8,1) = 20000000*rand; % carrying capacity of E cells
+
+                lower_bound = [1/60 1/60 1/(60*birth_tran_ratio) 1/(60*birth_tran_ratio) 0 0  1000000 1000000 ];
+                upper_bound = [1/20 1/20 1/(20*birth_tran_ratio)   1/(20*birth_tran_ratio) 10 10 20000000 20000000];
+            case {36}
+                parameters = zeros(7,1);
+                parameters(1,1) = 1/((60-20)*rand + 20);
+                parameters(2,1) = 1/((60-20)*rand + 20); % growth rate of e cells
+                parameters(3,1) = parameters(1,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(4,1) = parameters(2,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(5,1) = rand*20000000; % carrying capacity of M cells
+                parameters(6,1) = 1 * rand; % Retetion constant of E population
+                parameters(7,1) = 4 * rand; % Influence constant of M population
+
+                lower_bound = [1/60 1/60 1/(60*birth_tran_ratio) 1/(60*birth_tran_ratio) 1000000 0 0];
+                upper_bound = [1/20 1/20 1/(20*birth_tran_ratio) 1/(20*birth_tran_ratio) 20000000 1 10];
+            case {37}
+                parameters = zeros(7,1);
+                parameters(1,1) = 1/((60-20)*rand + 20);
+                parameters(2,1) = 1/((60-20)*rand + 20); % growth rate of e cells
+                parameters(3,1) = parameters(1,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(4,1) = parameters(2,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(5,1) = rand*20000000; % carrying capacity of M cells
+
+                parameters(6,1) = 1 * rand; % retention constant of M population
+                parameters(7,1) = 1 * rand; % Influence constant of M population
+
+                lower_bound = [1/60 1/60 1/(60*birth_tran_ratio) 1/(60*birth_tran_ratio) 1000000 0 0];
+                upper_bound = [1/20 1/20 1/(20*birth_tran_ratio) 1/(20*birth_tran_ratio) 20000000 1 1];
+
+
+            case {38,39}
+                parameters = zeros(6,1);
+                parameters(1,1) = 1/((60-20)*rand + 20);
+                parameters(2,1) = 1/((60-20)*rand + 20); % growth rate of e cells
+                parameters(3,1) = parameters(1,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(4,1) = parameters(2,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(5,1) = rand*20000000; % carrying capacity of M cells
+
+                parameters(6,1) = 1 * rand; % retention constant of M population
+
+                lower_bound = [1/60 1/60 1/(60*birth_tran_ratio) 1/(60*birth_tran_ratio) 1000000 0];
+                upper_bound = [1/20 1/20 1/(20*birth_tran_ratio) 1/(20*birth_tran_ratio) 20000000 1];
+            case {40}
+                parameters = zeros(7,1);
+                parameters(1,1) = 1/((60-20)*rand + 20);
+                parameters(2,1) = 1/((60-20)*rand + 20); % growth rate of e cells
+                parameters(3,1) = rand*20000000; % carrying capacity of M cells
+                parameters(4,1) = rand; % E competition to M cells
+                parameters(5,1) = rand; % M competition to E cells
+                parameters(6,1) = parameters(1,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(7,1) = parameters(2,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+
+                lower_bound = [1/60 1/60 1000000 -1 -1 1/(60*birth_tran_ratio) 1/(60*birth_tran_ratio)];
+                upper_bound = [1/20 1/20 20000000 1 1 1/(20*birth_tran_ratio) 1/(20*birth_tran_ratio)];
+
+            case 41
+                parameters = zeros(3,1);
+                parameters(1,1) = 1/((60-20)*rand + 20);
+                parameters(2,1) = 1/((60-20)*rand + 20); % growth rate of e cells
+                parameters(3,1) = rand*20000000; % carrying capacity of M cells
+
+                lower_bound = [1/60 1/60 1000000];
+                upper_bound = [1/20 1/20 20000000];
+
+            case {42}
+                parameters = zeros(6,1);
+                parameters(1,1) = 1/((60-20)*rand + 20);
+                parameters(2,1) = 1/((60-20)*rand + 20); % growth rate of e cells
+                parameters(3,1) = rand; % carrying capacity of M cells
+                parameters(4,1) = rand; % carrying capacity of E cells
+                parameters(5,1) = rand*20000000; % E competition to M cells
+                parameters(6,1) = rand*20000000; % M competition to E cells
+
+                lower_bound = [1/60 1/60 0 0 1000000 1000000];
+                upper_bound = [1/20 1/20 10 10 20000000 20000000];
+            case {43}
+                parameters = zeros(5,1);
+                parameters(1,1) = 1/((60-20)*rand + 20);
+                parameters(2,1) = 1/((60-20)*rand + 20); % growth rate of e cells
+                parameters(3,1) = rand*20000000; % carrying capacity of M cells
+                parameters(4,1) = rand; % E competition to M cells
+                parameters(5,1) = rand; % M competition to E cells
+
+                lower_bound = [1/60 1/60 1000000 -1 -1];
+                upper_bound = [1/20 1/20 20000000 1 1];
+            case {44}
+                parameters = zeros(7,1);
+                parameters(1,1) = 1/((60-20)*rand + 20);
+                parameters(2,1) = 1/((60-20)*rand + 20); % growth rate of e cells
+                parameters(3,1) = parameters(1,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(4,1) = parameters(2,1)/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(5,1) = 10000000; % carrying capacity of M cells
+                parameters(6,1) = 1 * rand; % retention constant of M population
+                parameters(7,1) = 4 * rand; % Influence constant of M population
+
+                lower_bound = [1/60 1/60  1/(60*birth_tran_ratio) 1/(60*birth_tran_ratio) 1000000 0 0];
+                upper_bound = [1/20 1/20 1/(20*birth_tran_ratio) 1/(20*birth_tran_ratio) 20000000 1 10];
+
+            case {52,53}
+               parameters = zeros(6,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells wrt growth rate of m cells
+                parameters(2,1) = 1/(1+birth_tran_ratio*rand); % M E transition rate wrt growth rate of m cells
+                parameters(3,1) = 1/(1+birth_tran_ratio*rand); % E M transition rate wrt growth rate of m cells
+                parameters(4,1) = 1/(1+birth_tran_ratio*rand); % M E transition rate wrt growth rate of m cells
+                parameters(5,1) = 1/(1+birth_tran_ratio*rand); % E M transition rate wrt growth rate of m cells
+                parameters(6,1) = rand; % initial fraction of hybrid cells in the E/M subpopulation
+
+                lower_bound = [1 0 0 0 0 0];
+                upper_bound = [3 1 1 1 1 1];
+
+            case {54,55}
+                parameters = zeros(7,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells
+                parameters(2,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(3,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(4,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(5,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(6,1) = rand*20000000; % carrying capacity of M cells
+                parameters(7,1) = rand; % % initial fraction of hybrid cells in the E/M subpopulation
+
+
+                lower_bound = [1 0 0 0 0 1000000 0];
+                upper_bound = [3 1 1 1 1 20000000 1];
+
+            case {56,57}
+                parameters = zeros(9,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells
+                parameters(2,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(3,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(4,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(5,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(6,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(7,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(8,1) = rand*20000000; % carrying capacity of M cells
+                parameters(9,1) = rand; % % initial fraction of hybrid cells in the E/M subpopulation
+
+
+                lower_bound = [1 0 0 0 0 0 0 1000000 0];
+                upper_bound = [3 1 1 1 1 1 1 20000000 1];
+
         end
     else
         switch pop_model_indx
@@ -475,7 +636,9 @@ for itr_num = 1:total_itr
                 parameters(3,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
                 parameters(4,1) = rand*20000000; % carrying capacity of M cells
 
-                lower_bound = [r2 1/birth_tran_ratio 1/birth_tran_ratio 1000000];
+                % lower_bound = [r2 1/birth_tran_ratio 1/birth_tran_ratio 1000000];
+                lower_bound = [r2 0 0 1000000];
+
                 upper_bound = [r2 1 1 20000000];
 
             case {21}
@@ -488,7 +651,7 @@ for itr_num = 1:total_itr
                 parameters(6,1) = 20000000*rand; % carrying capacity of M cells
                 parameters(7,1) = 20000000*rand; % carrying capacity of E cells
 
-                lower_bound = [r2 1/birth_tran_ratio 1/birth_tran_ratio -10 -10  1000000 1000000 ];
+                lower_bound = [r2 1/birth_tran_ratio 1/birth_tran_ratio 0 0  1000000 1000000 ];
                 upper_bound = [r2 1 1 10 10 20000000 20000000];
 
             case {22}
@@ -554,23 +717,18 @@ for itr_num = 1:total_itr
                 upper_bound = [r2 1 1 20000000 1];
 
             case {28}
-                parameters = zeros(13,1);
-                parameters(1,1) = rand; % growth rate of e cells
-                parameters(2,1) = rand; % non-dimensional rescaled M to E transiton rates
-                parameters(3,1) = rand; % non-dimensional rescaled E to M transiton rates
-                parameters(4,1) = rand; % carrying capacity of M cells
-                parameters(5,1) = rand; % retention constant of M population
-                parameters(6,1) = rand; % retention constant of M population
-                parameters(7,1) = rand; % growth rate of e cells
-                parameters(8,1) = rand; % non-dimensional rescaled M to E transiton rates
-                parameters(9,1) = rand; % non-dimensional rescaled E to M transiton rates
-                parameters(10,1) = rand; % carrying capacity of M cells
-                parameters(11,1) = rand; % retention constant of M population
-                parameters(12,1) = rand; % retention constant of M population
-                parameters(13,1) = rand; % retention constant of M population
+                parameters = zeros(7,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells wrt growth rate of m cells
+                parameters(2,1) = 1/(1+birth_tran_ratio*rand); % M E transition rate wrt growth rate of m cells
+                parameters(3,1) = 1/(1+birth_tran_ratio*rand); % E M transition rate wrt growth rate of m cells
+                parameters(4,1) = 1/(1+birth_tran_ratio*rand); % M E transition rate wrt growth rate of m cells
+                parameters(5,1) = 1/(1+birth_tran_ratio*rand); % E M transition rate wrt growth rate of m cells
+                parameters(6,1) = 1/(1+birth_tran_ratio*rand); % M E transition rate wrt growth rate of m cells
+                parameters(7,1) = 1/(1+birth_tran_ratio*rand); % E M transition rate wrt growth rate of m cells
 
-                lower_bound = [0 0 0 0 0 0 0 0 0 0 0 0 0];
-                upper_bound = [1 1 1 1 1 1 1 1 1 1 1 1 1];
+
+                lower_bound = [r2 1/(birth_tran_ratio) 1/(birth_tran_ratio) 1/(birth_tran_ratio) 1/(birth_tran_ratio) 1/(birth_tran_ratio) 1/(birth_tran_ratio)];
+                upper_bound = [r2 1 1 1 1 1 1];
 
             case {29}
                 parameters = zeros(5,1);
@@ -581,7 +739,7 @@ for itr_num = 1:total_itr
                 parameters(5,1) = rand* 20000000; % carrying capacity of E cells
 
 
-                lower_bound = [r2 -10 -10  1000000 1000000 ];
+                lower_bound = [r2 0 0  1000000 1000000 ];
                 upper_bound = [r2 10 10 20000000 20000000];
             case {30}
                 parameters = zeros(15,1);
@@ -639,6 +797,94 @@ for itr_num = 1:total_itr
 
                 lower_bound = [r2 1000000 -1 -1 1/(1+birth_tran_ratio) 1/(1+birth_tran_ratio)];
                 upper_bound = [r2 20000000 1 1 1 1];   
+
+            case {45, 46}
+                parameters = zeros(8,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells
+                parameters(2,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(3,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(4,1) = rand; % E competition to M cells
+                parameters(5,1) = rand; % M competition to E cells
+                parameters(6,1) = 20000000*rand; % carrying capacity of M cells
+                parameters(7,1) = 20000000*rand; % carrying capacity of E cells
+                parameters(8,1) = rand; % E/M retention strength
+
+
+                lower_bound = [r2 1/birth_tran_ratio 1/birth_tran_ratio 0 0  1000000 1000000 0];
+                upper_bound = [r2 1 1 10 10 20000000 20000000 1];
+
+            case {47}
+                parameters = zeros(8,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells
+                parameters(2,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(3,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(4,1) = rand; % E competition to M cells
+                parameters(5,1) = rand; % M competition to E cells
+                parameters(6,1) = 20000000*rand; % carrying capacity of M cells
+                parameters(7,1) = 20000000*rand; % carrying capacity of E cells
+                parameters(8,1) = 4*rand; % M influence strength
+
+
+                lower_bound = [r2 1/birth_tran_ratio 1/birth_tran_ratio 0 0  1000000 1000000 0];
+                upper_bound = [r2 1 1 10 10 20000000 20000000 10];
+
+            case {48,49}
+                parameters = zeros(7,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells
+                parameters(2,1) = rand*20000000; % carrying capacity of M cells
+                parameters(3,1) = rand; % E competition to M cells
+                parameters(4,1) = rand; % M competition to E cells
+                parameters(5,1) = 1/(1+birth_tran_ratio*rand); % E competition to M cells
+                parameters(6,1) = 1/(1+birth_tran_ratio*rand); % M competition to E cells
+                parameters(7,1) = rand; % E/M retention strength
+
+
+                lower_bound = [r2 1000000 -1 -1 1/(1+birth_tran_ratio) 1/(1+birth_tran_ratio) 0];
+                upper_bound = [r2 20000000 1 1 1 1 1];   
+            
+            case {50}
+                parameters = zeros(7,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells
+                parameters(2,1) = rand*20000000; % carrying capacity of M cells
+                parameters(3,1) = rand; % E competition to M cells
+                parameters(4,1) = rand; % M competition to E cells
+                parameters(5,1) = 1/(1+birth_tran_ratio*rand); % E competition to M cells
+                parameters(6,1) = 1/(1+birth_tran_ratio*rand); % M competition to E cells
+                parameters(7,1) = 4*rand; % M influence strength
+
+
+                lower_bound = [r2 1000000 -1 -1 1/(1+birth_tran_ratio) 1/(1+birth_tran_ratio) 0];
+                upper_bound = [r2 20000000 1 1 1 1 10];   
+
+            case {54,55}
+                parameters = zeros(7,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells
+                parameters(2,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(3,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(4,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(5,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(6,1) = rand*20000000; % carrying capacity of M cells
+                parameters(7,1) = rand; % % initial fraction of hybrid cells in the E/M subpopulation
+
+
+                lower_bound = [r2 0 0 0 0 1000000 0];
+                upper_bound = [r2 1 1 1 1 20000000 1];
+
+            case {56,57}
+                parameters = zeros(9,1);
+                parameters(1,1) = (1 + 2*rand); % growth rate of e cells
+                parameters(2,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(3,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(4,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(5,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(6,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled M to E transiton rates
+                parameters(7,1) = 1/(1+birth_tran_ratio*rand); % non-dimensional rescaled E to M transiton rates
+                parameters(8,1) = rand*20000000; % carrying capacity of M cells
+                parameters(9,1) = rand; % % initial fraction of hybrid cells in the E/M subpopulation
+
+
+                lower_bound = [r2 0 0 0 0 0 0 1000000 0];
+                upper_bound = [r2 1 1 1 1 1 1 20000000 1];
         end
     end
 
@@ -647,11 +893,8 @@ for itr_num = 1:total_itr
         cost = @(parameters) obj_fun(parameters, data_type,data,pop_model_indx, num_rep,timept,interpolated_timept,init_cond, interpolation);
         options = optimoptions('lsqnonlin','Display','off');
         [temp_select_para, temp_goodness] = lsqnonlin(cost,parameters,lower_bound, upper_bound, options); % lsqnonlin is a non-linear optimizer; sim_traj: simulate trajectory
-        %         temp_goodness = temp_goodness/(length(init_cond)*num_rep*num_time_pts); % individual differences are squared and sum by the function and we divide the summed value with the total number data points
     else
         temp_select_para = parameters;
-        %                 ode_sim_data = ODE_simulation(pop_model_indx, num_rep,timept,transform_para);
-        %                 temp_goodness = sum((data(:,2) - ode_sim_data(:,1)).^2)/(2*num_rep*num_time_pts);
         temp_goodness = 0;
     end
 

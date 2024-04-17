@@ -1,4 +1,6 @@
-function [param_val,chi_sq] = prof_likelihood_algo(pop_model_indx,birth_tran_ratio,data_type ,data,num_rep,init_cond,timept,interpolated_timept, interpolation,lower_bound,upper_bound,profile_sample_size, noise_factor,test_data_indx, r1,r2)
+function [param_val,chi_sq] = prof_likelihood_algo(pop_model_indx,unidentifiable_para_only,practical_identifiability_status,birth_tran_ratio,data_type ,data,num_rep,num_init_cond,timept,interpolated_timept, interpolation,lower_bound,upper_bound,profile_sample_size, noise_factor,test_data_indx, r1,r2,original_num_timepts)
+
+unidentifiable_para_indx = find(practical_identifiability_status == 0);
 
 param_val = cell(length(lower_bound),1);
 chi_sq = cell(length(lower_bound),1); % here 1000 is the length of theta vector defined below
@@ -50,31 +52,39 @@ switch pop_model_indx % i.e. model whose parameters have dimension
             %             profile_likelihood_plot(param_val(:,:,para_indx),chi_sq(:,para_indx),para_indx,pop_model_indx,birth_tran_ratio, noise_factor, data_type,test_data_indx, r1, num_rep, timept, num_init_cond)
         end
 
-    case {3,4,6,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,32,33}% for models whose parameters are dimensionless
+    case {3,4,6,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28}% for models whose parameters are dimensionless
 
         if(isempty(r2))
-            para_indx_vals = 1:length(lower_bound);
-
+            if (unidentifiable_para_only == 0)
+                para_indx_vals = 1:length(lower_bound);
+            else
+                para_indx_vals = unidentifiable_para_indx;
+            end
         else
-            para_indx_vals = 2:length(lower_bound);
+            if (unidentifiable_para_only == 0)
+                para_indx_vals = 2:length(lower_bound);
+            else
+%                 para_indx_vals = unidentifiable_para_indx;
+                para_indx_vals = unidentifiable_para_indx(unidentifiable_para_indx ~= 1);
+
+            end
         end
 
         parfor para_indx = 1:max(para_indx_vals)%1:length(lower_bound) % to run the analyze for the parameters sequentially
 
             if(~isempty(find(para_indx == para_indx_vals,1)))
-                disp(['Running profile likelihood analysis for pop model ' num2str(pop_model_indx) 'para indx ' num2str(para_indx)])
+                disp(['Running profile likelihood analysis for pop model ' num2str(pop_model_indx) ' para indx ' num2str(para_indx)])
 
                 theta = linspace(lower_bound(para_indx),upper_bound(para_indx),profile_sample_size); % no inversion of parameters is required as they are dimensionless
 
-                for i  = 1:length(theta)
+                for i  = 1:size(theta,2)
                                         
-                    % disp(['Running profile likelihood analysis for pop model ' num2str(pop_model_indx) ' para indx ' num2str(para_indx) ' Current para iteration ' num2str(i)  ' Current para value ' num2str(theta(i)) ' Upper bound ' num2str(upper_bound(para_indx))])
-                    % disp(['Running profile likelihood analysis for pop model ' num2str(pop_model_indx) ' para indx ' num2str(para_indx) ' Current para iteration ' num2str(i) ])
+                    disp(['Running profile likelihood analysis for para indx ' num2str(para_indx) ' Current para iteration ' num2str(i)  ' Current para value ' num2str(theta(i)) ' Upper bound ' num2str(upper_bound(para_indx))])
 
                     new_lower_bound = [lower_bound(1:para_indx-1) theta(i) lower_bound(para_indx+1:end)];
                     new_upper_bound = [upper_bound(1:para_indx-1) theta(i) upper_bound(para_indx+1:end)];
 
-                    cost = @(params) obj_fun(params, data_type,data,pop_model_indx,num_rep,timept, interpolated_timept, init_cond, interpolation);
+                    cost = @(params) obj_fun(params, data_type,data,pop_model_indx,num_rep,timept, interpolated_timept, interpolation,original_num_timepts);
                     % note: I have not ramdomly selected the initial guess for each
                     % increment of theta values. This may affect the results if there
                     % are local minima
@@ -100,5 +110,4 @@ switch pop_model_indx % i.e. model whose parameters have dimension
         end
 
 end
-
 end
